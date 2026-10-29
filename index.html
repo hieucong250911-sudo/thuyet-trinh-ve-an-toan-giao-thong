@@ -1,0 +1,222 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>An toàn giao thông</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --pink: #f4a7c5;
+  --dark: #11121a;
+}
+
+body {
+  background: var(--dark);
+  color: white;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+  height: 100vh;
+}
+
+#app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  gap: 12px;
+}
+
+.stage {
+  width: min(96vw, 1280px);
+  aspect-ratio: 16 / 9;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 45px #f4a7c533;
+  perspective: 1400px;
+}
+
+#page {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: white;
+  transition: opacity .35s ease, transform .55s ease;
+}
+
+#page.fade-out {
+  opacity: 0;
+  transform: scale(.94) rotateY(-5deg);
+}
+
+.decoration {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  font-size: clamp(18px, 3vw, 36px);
+  animation: float 3.8s ease-in-out infinite;
+  filter: drop-shadow(0 3px 8px #0002);
+}
+
+.d1 { top: 5%; left: 2%; }
+.d2 { right: 2%; top: 8%; animation-delay: -1.2s; }
+.d3 { bottom: 5%; right: 3%; animation-delay: -2s; }
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-9px) rotate(5deg);
+  }
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+button {
+  color: white;
+  background: #252633;
+  border: 1px solid #55566b;
+  padding: 11px 17px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: .2s;
+}
+
+button:hover {
+  background: #d84f91;
+  transform: translateY(-2px);
+}
+
+#counter {
+  color: #f8b8d2;
+  min-width: 65px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.hint {
+  color: #a8a8bb;
+  font-size: 12px;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  #app { gap: 9px; padding: 5px; }
+  .stage { width: 98vw; border-radius: 5px; }
+  button { padding: 9px 12px; font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+</style>
+</head>
+
+<body>
+<div id="app">
+  <div class="stage">
+    <iframe
+      id="page"
+      title="Bài thuyết trình an toàn giao thông"
+      src="presentation.pdf#page=1&toolbar=0&navpanes=0&view=Fit"
+      allow="fullscreen">
+    </iframe>
+
+    <div class="decoration d1">✨</div>
+    <div class="decoration d2">🌸</div>
+    <div class="decoration d3">✦</div>
+  </div>
+
+  <div class="controls">
+    <button id="prev">❮ Trang trước</button>
+    <span id="counter">1 / 10</span>
+    <button id="next">Trang tiếp ❯</button>
+    <button id="full">⛶ Toàn màn hình</button>
+  </div>
+
+  <p class="hint">
+    Dùng phím ← → để chuyển trang · Nhấn F để toàn màn hình
+  </p>
+</div>
+
+<script>
+const total = 10;
+let current = 1;
+
+const page = document.getElementById("page");
+const counter = document.getElementById("counter");
+const stage = document.querySelector(".stage");
+
+function renderPage(number) {
+  current = Math.max(1, Math.min(total, number));
+
+  page.classList.add("fade-out");
+  counter.textContent = `${current} / ${total}`;
+
+  // Chuyển trang bằng hiệu ứng fade và xoay nhẹ.
+  setTimeout(() => {
+    page.src =
+      `presentation.pdf#page=${current}&toolbar=0&navpanes=0&view=Fit`;
+    page.classList.remove("fade-out");
+  }, 220);
+}
+
+document.getElementById("prev").onclick = () =>
+  renderPage(current - 1);
+
+document.getElementById("next").onclick = () =>
+  renderPage(current + 1);
+
+document.getElementById("full").onclick = async () => {
+  try {
+    if (!document.fullscreenElement) {
+      await stage.requestFullscreen();
+    } else {
+      await document.exitFullscreen();
+    }
+  } catch (error) {
+    alert("Trình duyệt chưa cho phép toàn màn hình.");
+  }
+};
+
+document.addEventListener("keydown", event => {
+  if (event.key === "ArrowRight" || event.key === " ") {
+    event.preventDefault();
+    renderPage(current + 1);
+  }
+
+  if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    renderPage(current - 1);
+  }
+
+  if (event.key.toLowerCase() === "f") {
+    document.getElementById("full").click();
+  }
+});
+</script>
+</body>
+</html>
